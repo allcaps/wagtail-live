@@ -1,2 +1,7 @@
-Django>=2.1,<2.2
-wagtail>=2.4,<2.5
+Django==2.1.7
+psycopg2==2.7.7
+wagtail==2.4
+
+# Development
+isort==4.3.13
+ipdb==0.11

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block extra_css %}
+{% endblock extra_css %}
+
+{% block content %}
+
+  <h1>Liveblogs</h1>
+  <ul>
+  {% for page in pages %}
+    <li>
+      <a href="{{ page.url }}">{{ page.title }}</a>
+    </li>
+  {% empty %}
+    <li>
+      Nothing yet.
+    </li>
+  {% endfor %}
+  </ul>
+
+{% endblock content %}

@@ -9,6 +9,11 @@ https://docs.djangoproject.com/en/2.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.1/ref/settings/
 """
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
@@ -24,9 +29,8 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 # Application definition
 
 INSTALLED_APPS = [
-    'home',
-    'search',
-
+    'website',
+    'rest_framework',
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
     'wagtail.embeds',
@@ -91,8 +95,8 @@ WSGI_APPLICATION = 'liveblog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'liveblog',
     }
 }
 
@@ -161,3 +165,10 @@ WAGTAIL_SITE_NAME = "liveblog"
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 BASE_URL = 'http://example.com'
+
+
+
+SLACK_CLIENT_ID = env('SLACK_CLIENT_ID')
+SLACK_CLIENT_SECRET = env('SLACK_CLIENT_SECRET')
+SLACK_VERIFICATION_TOKEN = env('SLACK_VERIFICATION_TOKEN')
+SLACK_BOT_USER_TOKEN = env('SLACK_BOT_USER_TOKEN')

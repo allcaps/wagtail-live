@@ -18,6 +18,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
 
         {# Global stylesheets #}
+        <link rel="stylesheet" href="https://unpkg.com/tachyons@4.10.0/css/tachyons.min.css"/>
         <link rel="stylesheet" type="text/css" href="{% static 'css/liveblog.css' %}">
 
         {% block extra_css %}
@@ -25,16 +26,18 @@
         {% endblock %}
     </head>
 
-    <body>
-        {% wagtailuserbar %}
+    <body class="avenir black-80">
+        <section class="mw7 center pt5">
+            {% wagtailuserbar %}
 
-        {% block content %}{% endblock %}
+            {% block content %}{% endblock %}
 
-        {# Global javascript #}
-        <script type="text/javascript" src="{% static 'js/liveblog.js' %}"></script>
+            {# Global javascript #}
+            <script type="text/javascript" src="{% static 'js/liveblog.js' %}"></script>
 
-        {% block extra_js %}
-            {# Override this in templates to add extra javascript #}
-        {% endblock %}
+            {% block extra_js %}
+                {# Override this in templates to add extra javascript #}
+            {% endblock %}
+        </section>
     </body>
 </html>

@@ -1,5 +1,7 @@
+from django.utils import timezone
 from wagtail.core import blocks
 from wagtail.embeds.blocks import EmbedBlock
+from wagtail.images.blocks import ImageChooserBlock
 
 
 class Embed(EmbedBlock):
@@ -16,8 +18,8 @@ class Embed(EmbedBlock):
 
 
 class AbstractUpdateBlock(blocks.StructBlock):
-    message_id = blocks.CharBlock()
-    timestamp = blocks.DateTimeBlock()
+    message_id = blocks.CharBlock(required=False)
+    timestamp = blocks.DateTimeBlock(required=False)
 
 
 class TextUpdate(AbstractUpdateBlock):
@@ -25,3 +27,17 @@ class TextUpdate(AbstractUpdateBlock):
 
     class Meta:
         template = 'website/blocks/text.html'
+
+
+class EmbedUpdate(AbstractUpdateBlock):
+    embed = EmbedBlock()
+
+    class Meta:
+        template = 'website/blocks/embed.html'
+
+
+class ImageUpdate(AbstractUpdateBlock):
+    image = ImageChooserBlock()
+
+    class Meta:
+        template = 'website/blocks/image.html'

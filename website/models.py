@@ -6,14 +6,15 @@ from django.template.defaultfilters import truncatewords
 from django.utils.timezone import now
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
-from wagtail.admin.edit_handlers import StreamFieldPanel, InlinePanel
+from wagtail.admin.edit_handlers import InlinePanel, StreamFieldPanel
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
-from website.blocks import Embed, TextUpdate
+from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
 
 BLOCK_TYPES = [
-    # ('embed', Embed()),
     ('text', TextUpdate()),
+    ('image', ImageUpdate()),
+    ('embed', EmbedUpdate()),
 ]
 
 blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'],

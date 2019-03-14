@@ -29,14 +29,30 @@ class Event(APIView):
 
         # Handle app event.
         if 'event' in slack_message:
+            event = slack_message['event']
 
             # TODO: This should be a channel2page selection.
             live_blog: LiveBlog = LiveBlog.objects.first()
 
-            PendingUpdate.objects.create(
-                live_blog=live_blog,
-                raw_update=slack_message['event']['text'],
-            )
+            if event['type'] == 'message' and 'subtype' not in event:
+                PendingUpdate.objects.create(
+                    live_blog=live_blog,
+                    update_type=PendingUpdate.NEW_MESSAGE,
+                    raw_update=slack_message['event']['text'],
+                    slack_id=slack_message['event']['client_msg_id']
+                )
+            elif event['type'] == 'message' \
+                    and event.get('subtype') == 'message_changed':
+                PendingUpdate.objects.create(
+                    live_blog=live_blog,
+                    update_type=PendingUpdate.EDIT,
+                    raw_update=slack_message['event']['message']['text'],
+                    slack_id=slack_message['event']['message']['client_msg_id']
+                )
+            else:
+                # nothing done
+                return
+
             live_blog.update()
 
             # snippet = Snippet(

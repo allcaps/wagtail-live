@@ -29,12 +29,20 @@ class LiveBlog(Page):
         InlinePanel('live_updates'),
     ]
 
+    @property
+    def group_name(self):
+        return 'liveblog-{}'.format(self.pk)
+
     def update(self):
         """ apply all pending updates """
         def get_pending_updates():
             return PendingUpdate.objects.filter(
                 live_blog=self,
-                timestamp__gt=self.last_updated).order_by('timestamp')
+                timestamp__gt=self.last_updated).order_by('-timestamp')
+
+        def mid(stream_value):
+            # get message id for stream_value
+            return stream_value.value['message_id']
 
         if self.locked:
             return
@@ -47,15 +55,30 @@ class LiveBlog(Page):
             # Apply updates
             pending_updates = get_pending_updates()
             items = self.body.stream_data
+            updated = []
             for update in pending_updates:
-                items.append({
-                    'type': 'text',
-                    'value': {
-                        'message_id': update.slack_id,
-                        'timestamp': update.timestamp,
-                        'message': update.raw_update,
-                    }
-                })
+                if update.update_type == PendingUpdate.NEW_MESSAGE:
+                    items.append({
+                        'type': 'text',
+                        'value': {
+                            'message_id': update.slack_id,
+                            'timestamp': update.timestamp,
+                            'message': update.raw_update,
+                        }
+                    })
+                    updated.append(update.slack_id)
+                elif update.update_type == PendingUpdate.EDIT:
+                    # Find message to update
+                    item = None
+                    for option in items:
+                        if option['value']['message_id'] == update.slack_id:
+                            item = option
+                            break
+                    else:
+                        # No match found to edit :-(
+                        continue
+                    item['value']['message'] = update.raw_update
+                    updated.append(update.slack_id)
             # TODO: Maybe order stream data items on timestamp!
             self.last_updated = now()
             self.save()
@@ -64,8 +87,10 @@ class LiveBlog(Page):
             pending_updates.delete()
 
             # compiled_version = LiveBlog.objects.get(pk=self.pk)
-            new_blocks = list(self.body)[-num_updates:]
-            renders = [value.render_as_block() for value in new_blocks]
+            updated_blocks = [block for block in self.body
+                              if mid(block) in updated]
+            renders = {mid(value): value.render_as_block()
+                       for value in updated_blocks}
 
             blog_update.send(sender=LiveBlog, instance=self,
                              num_updates=num_updates, renders=renders)
@@ -79,10 +104,6 @@ class LiveBlog(Page):
         pending_updates = get_pending_updates()
         if pending_updates:
             self.update()
-
-    @property
-    def group_name(self):
-        return 'liveblog-{}'.format(self.pk)
 
 
 class Snippet(ClusterableModel):
@@ -105,6 +126,10 @@ class Snippet(ClusterableModel):
 
 class PendingUpdate(models.Model):
     """ Pending updates will be added asap! """
+    NEW_MESSAGE = 1
+    EDIT = 2
+
+    update_type = models.PositiveIntegerField()
     live_blog = models.ForeignKey(LiveBlog, on_delete=models.CASCADE)
     slack_id = models.CharField(max_length=40)
     raw_update = models.TextField()

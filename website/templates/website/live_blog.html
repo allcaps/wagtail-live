@@ -22,7 +22,14 @@
       socket.onmessage = (e) => {
           let data = JSON.parse(e.data);
           let { message, renders } = data;
-          messageContainer.innerHTML = Array.from(renders).join('') + messageContainer.innerHTML;
+          Object.entries(renders).forEach(([ key, value]) => {
+            const existing = messageContainer.querySelector(`[data-message-id="${key}"]`);
+            if (existing) {
+              existing.outerHTML = value;
+            } else {
+              messageContainer.innerHTML = value + messageContainer.innerHTML;
+            }
+          });
           console.log(message);
       };
 

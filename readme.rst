@@ -1,7 +1,11 @@
 Install
 -------
 
+# Create a db
 createdb liveblog
+
+# Add your SLACK credentials
+cp liveblog/settings/.env.example liveblog/settings/.env
 
 virtualenv env -p python3.7
 source env/bin/activate
@@ -10,6 +14,7 @@ python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 
+# Login to the admin create homepage (index) and a child LiveBlog page.
 
 
 Public URLs for exposing your local web server

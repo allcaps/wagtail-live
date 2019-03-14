@@ -1,3 +1,4 @@
-<div class="text" data-message-id="{{ value.message_id }}">
-  <em>{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </em> &mdash; {{ value.message|linebreaksbr }}
+<div class="text mb4" data-message-id="{{ value.message_id }}">
+  <span class="gray">{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </span><br />
+  <p class="mt1 f3 dark-gray">{{ value.message|linebreaksbr }}</p>
 </div>

@@ -1,5 +1,10 @@
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags wagtailimages_tags %}
 
 <div class="image">
-  {% include_block self %}
+  <span class="gray">{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </span><br />
+  {% image value.image width-1200 as img %}
+  <p class="mt1 mb1 f3 dark-gray">{{ img.alt }}</p>
+  <img src="{{ img.url }}"
+    width="{% widthratio img.width 2 1 %}"
+    alt="{{ img.alt }}" class="mb4 db br2" />
 </div>

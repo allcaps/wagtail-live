@@ -21,6 +21,14 @@ class AbstractUpdateBlock(blocks.StructBlock):
     message_id = blocks.CharBlock(required=False)
     timestamp = blocks.DateTimeBlock(required=False)
 
+    def clean(self, value):
+        """Add timestamp if timestamp is empty.
+        This would happen when an block is added via de admin.
+        """
+        if not value['timestamp']:
+            value['timestamp'] = timezone.now()
+        return super().clean(value)
+
 
 class TextUpdate(AbstractUpdateBlock):
     message = blocks.CharBlock()

@@ -31,7 +31,7 @@ class AbstractUpdateBlock(blocks.StructBlock):
 
 
 class TextUpdate(AbstractUpdateBlock):
-    message = blocks.CharBlock()
+    message = blocks.TextBlock()
 
     class Meta:
         template = 'website/blocks/text.html'

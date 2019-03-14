@@ -4,4 +4,5 @@ from . import consumers
 
 websocket_urlpatterns = [
     url(r'^ws/chat/(?P<room_name>[^/]+)/$', consumers.ChatConsumer),
+    url(r'^ws/update/(?P<blog_id>[^/]+)/$', consumers.UpdateConsumer),
 ]

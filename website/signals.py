@@ -26,7 +26,7 @@ def update_job_status_listeners(sender, instance, **kwargs):
     """
     Sends job status to the browser when a Job is modified
     """
-    group_name = 'chat_aie'
+    group_name = instance.page.group_name
 
     message = {
         'type': 'chat_message',

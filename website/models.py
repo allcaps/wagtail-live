@@ -1,7 +1,5 @@
-import json
-
-from asgiref.sync import async_to_sync
 from django.db import models
+from django.template.defaultfilters import truncatewords
 from wagtail.admin.edit_handlers import StreamFieldPanel
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
@@ -13,11 +11,15 @@ BLOCK_TYPES = [
 
 
 class LiveBlog(Page):
-    body = StreamField(BLOCK_TYPES)
+    body = StreamField(BLOCK_TYPES, blank=True)
 
     content_panels = Page.content_panels + [
         StreamFieldPanel('body'),
     ]
+
+    @property
+    def group_name(self):
+        return 'liveblog-{}'.format(self.pk)
 
 
 class Snippet(models.Model):
@@ -32,9 +34,9 @@ class Snippet(models.Model):
 
     def save(self, *args, **kwags):
         super(Snippet, self).save(*args, **kwags)
-        # from websocket import create_connection
-        # ws = create_connection("ws://127.0.0.1:6379")
-        # ws.send("Hello, World")
+
+    def __str__(self):
+        return truncatewords(self.message, 20)
 
 
 class HomePage(Page):

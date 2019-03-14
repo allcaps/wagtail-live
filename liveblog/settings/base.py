@@ -29,6 +29,7 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'website',
     'rest_framework',
     'wagtail.contrib.forms',
@@ -52,6 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'wagtail.contrib.modeladmin',
 ]
 
 MIDDLEWARE = [
@@ -172,3 +174,15 @@ SLACK_CLIENT_ID = env('SLACK_CLIENT_ID')
 SLACK_CLIENT_SECRET = env('SLACK_CLIENT_SECRET')
 SLACK_VERIFICATION_TOKEN = env('SLACK_VERIFICATION_TOKEN')
 SLACK_BOT_USER_TOKEN = env('SLACK_BOT_USER_TOKEN')
+
+ASGI_APPLICATION = "liveblog.routing.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+

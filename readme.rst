@@ -3,7 +3,7 @@ Install
 
 createdb liveblog
 
-virtualenv env -p python3.6
+virtualenv env -p python3.7
 source env/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
@@ -29,15 +29,12 @@ https://api.slack.com/apps/AGTF9MAMN/general?
 Event API endpoint https://[HASH].ngrok.io/api/event/
 
 
+Start Redis
+-----------
 
-
-
+brew services start redis
 
 
 https://api.slack.com/bot-users
 https://api.slack.com/actions
 https://api.slack.com/docs/verifying-requests-from-slack
-
-
-
-Geef mij berichten van na datumtijd == datumtijd last message.

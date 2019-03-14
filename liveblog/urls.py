@@ -6,7 +6,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.core import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from website import urls as website_urls
+from website import urls as website_urls, views as website_views
 from search import views as search_views
 
 urlpatterns = [
@@ -28,6 +28,12 @@ urlpatterns = [
     # of your site, rather than the site root:
     # url(r'^pages/', include(wagtail_urls)),
 ]
+
+from channels.routing import ProtocolTypeRouter
+
+application = ProtocolTypeRouter({
+    # (http->django views is added by default)
+})
 
 
 if settings.DEBUG:

@@ -6,8 +6,8 @@
 
 {% block content %}
 
-  <h1>{{ self.title }}</h1>
-  <p>Created {{ self.first_published_at }}</p>
+  <h1 class="f1 pt0 mt3 mb3">{{ self.title }}</h1>
+  <p class="mb5 orange">Created {{ self.first_published_at }}</p>
 
   <div id="updates-container">
     {% for block in self.body reversed %}

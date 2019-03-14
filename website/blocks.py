@@ -1,3 +1,4 @@
+from wagtail.core import blocks
 from wagtail.embeds.blocks import EmbedBlock
 
 
@@ -12,3 +13,15 @@ class Embed(EmbedBlock):
         label = 'Embed'
         icon = 'media'
         template = 'website/blocks/embed.html'
+
+
+class AbstractUpdateBlock(blocks.StructBlock):
+    message_id = blocks.CharBlock()
+    timestamp = blocks.DateTimeBlock()
+
+
+class TextUpdate(AbstractUpdateBlock):
+    message = blocks.CharBlock()
+
+    class Meta:
+        template = 'website/blocks/text.html'

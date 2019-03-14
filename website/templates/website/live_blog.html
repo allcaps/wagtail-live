@@ -9,13 +9,15 @@
   <h1>{{ self.title }}</h1>
   <p>Created {{ self.first_published_at }}</p>
 
-  {% for block in self.body %}
+  {% for block in self.body reversed %}
     {% include_block block %}
   {% endfor %}
 
-  <script>
-      const slug = '{{ self.slug }}';
+  <!--{% for update in self.live_updates.all %}-->
+    <!--{{ update }}-->
+  <!--{% endfor %}-->
 
+  <script>
       const socket = new WebSocket(`ws://${window.location.host}/ws/update/{{ page.group_name }}/`);
 
       socket.onmessage = (e) => {

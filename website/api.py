@@ -4,7 +4,7 @@ from rest_framework import status
 from django.conf import settings
 from slackclient import SlackClient
 
-from website.models import Snippet, LiveBlog
+from website.models import Snippet, LiveBlog, PendingUpdate
 
 SLACK_VERIFICATION_TOKEN = getattr(settings, 'SLACK_VERIFICATION_TOKEN', None)
 SLACK_BOT_USER_TOKEN = getattr(settings, 'SLACK_BOT_USER_TOKEN', None)
@@ -30,11 +30,20 @@ class Event(APIView):
         # Handle app event.
         if 'event' in slack_message:
 
-            snippet = Snippet(
-                page=LiveBlog.objects.first(),  # This should be a channel2page selection.
-                message=slack_message['event']['text'],
+            # TODO: This should be a channel2page selection.
+            live_blog: LiveBlog = LiveBlog.objects.first()
+
+            PendingUpdate.objects.create(
+                live_blog=live_blog,
+                raw_update=slack_message['event']['text'],
             )
-            snippet.save()
+            live_blog.update()
+
+            # snippet = Snippet(
+            #     page=LiveBlog.objects.first(),  # This should be a channel2page selection.
+            #     message=slack_message['event']['text'],
+            # )
+            # snippet.save()
 
             # event_message = slack_message.get('event')
             #

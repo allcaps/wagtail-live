@@ -4,7 +4,7 @@ from rest_framework import status
 from django.conf import settings
 from slackclient import SlackClient
 
-from website.models import Snippet, LiveBlog, PendingUpdate
+from website.models import Snippet, LiveBlog, PendingUpdate, HomePage
 
 SLACK_VERIFICATION_TOKEN = getattr(settings, 'SLACK_VERIFICATION_TOKEN', None)
 SLACK_BOT_USER_TOKEN = getattr(settings, 'SLACK_BOT_USER_TOKEN', None)
@@ -28,11 +28,28 @@ class Event(APIView):
         print(slack_message)
 
         # Handle app event.
-        if 'event' in slack_message:
+        if 'event' in slack_message and 'channel' in slack_message['event']:
             event = slack_message['event']
+            action_taken = True  # Assume we are going to do something
 
             # TODO: This should be a channel2page selection.
-            live_blog: LiveBlog = LiveBlog.objects.first()
+            channel = event['channel']
+            try:
+                live_blog = LiveBlog.objects.get(slack_channel=channel)
+            except LiveBlog.DoesNotExist:
+                if event['type'] == 'channel_created':
+                    live_blog = HomePage.objects.first().add_child(
+                        instance=LiveBlog(
+                            title=event['channel']['name'],
+                            slack_channel=channel['id'],
+                        ))
+                else:
+                    # Apparently we missed the channel created event...
+                    live_blog = HomePage.objects.first().add_child(
+                        instance=LiveBlog(
+                        title=channel,
+                        slack_channel=channel,
+                    ))
 
             if event['type'] == 'message' and 'subtype' not in event:
                 PendingUpdate.objects.create(
@@ -51,33 +68,9 @@ class Event(APIView):
                 )
             else:
                 # nothing done
-                return
+                action_taken = False
 
-            live_blog.update()
-
-            # snippet = Snippet(
-            #     page=LiveBlog.objects.first(),  # This should be a channel2page selection.
-            #     message=slack_message['event']['text'],
-            # )
-            # snippet.save()
-
-            # event_message = slack_message.get('event')
-            #
-            # # ignore bot's own message
-            # if event_message.get('subtype') == 'bot_message':
-            #     return Response(status=status.HTTP_200_OK)
-            #
-            # # process user's message
-            # user = event_message.get('user')
-            # text = event_message.get('text')
-            # channel = event_message.get('channel')
-            # bot_text = 'Hi <@{}> :wave:'.format(user)
-            # if 'hi' in text.lower():
-            #     Client.api_call(
-            #         method='chat.postMessage',
-            #         channel=channel,
-            #         text=bot_text
-            #     )
-            #     return Response(status=status.HTTP_200_OK)
+            if action_taken:
+                live_blog.update()
 
         return Response(status=status.HTTP_200_OK)

@@ -12,11 +12,11 @@ from wagtail.core.models import Page
 from website.blocks import Embed, TextUpdate
 
 BLOCK_TYPES = [
-    ('embed', Embed()),
+    # ('embed', Embed()),
     ('text', TextUpdate()),
 ]
 
-blog_update = ModelSignal(providing_args=['instance', 'num_updates'],
+blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'],
                           use_caching=True)
 
 
@@ -56,14 +56,19 @@ class LiveBlog(Page):
                         'message': update.raw_update,
                     }
                 })
+            # TODO: Maybe order stream data items on timestamp!
             self.last_updated = now()
             self.save()
             num_updates = int(pending_updates.count())
             # These are handled
             pending_updates.delete()
 
+            # compiled_version = LiveBlog.objects.get(pk=self.pk)
+            new_blocks = list(self.body)[-num_updates:]
+            renders = [value.render_as_block() for value in new_blocks]
+
             blog_update.send(sender=LiveBlog, instance=self,
-                             num_updates=num_updates)
+                             num_updates=num_updates, renders=renders)
         finally:
             # Unset lock
             self.locked = False

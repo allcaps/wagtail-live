@@ -23,7 +23,8 @@ def send_message(event):
 
 
 @receiver(blog_update, sender=LiveBlog)
-def update_job_status_listeners(sender, instance, num_updates, **kwargs):
+def update_job_status_listeners(sender, instance, num_updates, renders,
+                                **kwargs):
     """
     Sends job status to the browser when a Job is modified
     """
@@ -32,6 +33,7 @@ def update_job_status_listeners(sender, instance, num_updates, **kwargs):
     message = {
         'type': 'chat_message',
         'message': '{} updates!'.format(num_updates),
+        'renders': renders,
     }
 
     channel_layer = channels.layers.get_channel_layer()

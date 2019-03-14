@@ -9,21 +9,20 @@
   <h1>{{ self.title }}</h1>
   <p>Created {{ self.first_published_at }}</p>
 
-  {% for block in self.body reversed %}
-    {% include_block block %}
-  {% endfor %}
-
-  <!--{% for update in self.live_updates.all %}-->
-    <!--{{ update }}-->
-  <!--{% endfor %}-->
+  <div id="updates-container">
+    {% for block in self.body reversed %}
+      {% include_block block %}
+    {% endfor %}
+  </div>
 
   <script>
       const socket = new WebSocket(`ws://${window.location.host}/ws/update/{{ page.group_name }}/`);
+      const messageContainer = document.getElementById('updates-container');
 
       socket.onmessage = (e) => {
           let data = JSON.parse(e.data);
-          let { message } = data;
-          alert('Update received!');
+          let { message, renders } = data;
+          messageContainer.innerHTML = Array.from(renders).join('') + messageContainer.innerHTML;
           console.log(message);
       };
 

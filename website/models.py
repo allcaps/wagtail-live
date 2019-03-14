@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.db.models.signals import ModelSignal
@@ -7,6 +7,7 @@ from django.utils.timezone import now
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from wagtail.admin.edit_handlers import InlinePanel, StreamFieldPanel
+from wagtail.core.blocks import StreamValue
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
 from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
@@ -23,7 +24,9 @@ blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'],
 
 class LiveBlog(Page):
     body = StreamField(BLOCK_TYPES, blank=True)
-    last_updated = models.DateTimeField(default=datetime.min)
+    slack_channel = models.CharField(blank=True, max_length=80)
+    last_updated = models.DateTimeField(
+        default=datetime.min + timedelta(days=1))
 
     content_panels = Page.content_panels + [
         StreamFieldPanel('body'),
@@ -70,7 +73,6 @@ class LiveBlog(Page):
                     updated.append(update.slack_id)
                 elif update.update_type == PendingUpdate.EDIT:
                     # Find message to update
-                    item = None
                     for option in items:
                         if option['value']['message_id'] == update.slack_id:
                             item = option

@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 
 from django.db import models
@@ -7,19 +8,75 @@ from django.utils.timezone import now
 from modelcluster.fields import ParentalKey
 from modelcluster.models import ClusterableModel
 from wagtail.admin.edit_handlers import InlinePanel, StreamFieldPanel
-from wagtail.core.blocks import StreamValue
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
 from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
+from wagtail.embeds.oembed_providers import all_providers
+
+
+blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'], use_caching=True)
+
+
+TEXT = 'text'
+IMAGE = 'image'
+EMBED = 'embed'
 
 BLOCK_TYPES = [
-    ('text', TextUpdate()),
-    ('image', ImageUpdate()),
-    ('embed', EmbedUpdate()),
+    (TEXT, TextUpdate()),
+    (IMAGE, ImageUpdate()),
+    (EMBED, EmbedUpdate()),
 ]
 
-blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'],
-                          use_caching=True)
+
+def constuct_text_block(update):
+    return {
+        'type': TEXT,
+        'value': {
+            'message_id': update.slack_id,
+            'timestamp': update.timestamp,
+            'message': update.raw_update,
+        }
+    }
+
+
+def construct_image_block(update):
+    """Not implemented yet, do text"""
+    return constuct_text_block(update)
+
+
+def construct_embed_block(update):
+    return {
+        'type': EMBED,
+        'value': {
+            'message_id': update.slack_id,
+            'timestamp': update.timestamp,
+            'embed': update.raw_update[1:-1],  # Strip leading `<` and trailing `>`.
+        }
+    }
+
+
+HANDLERS = {
+    TEXT: constuct_text_block,
+    IMAGE: construct_image_block,
+    EMBED: construct_embed_block,
+}
+
+
+def get_block_type(update):
+    """
+    Get block type
+
+    :param update: The posted slack message (dict)
+    :return: TEXT, IMAGE, EMBED (string)
+    """
+    for provider in all_providers:
+        for url_pattern in provider.get('urls', []):
+            # Some how Slack links start with `<` and end with `>`.
+            # I strip those off.
+            val = update.raw_update[1:-1]
+            if bool(re.match(url_pattern, val)):
+                return EMBED
+    return TEXT
 
 
 class LiveBlog(Page):
@@ -62,17 +119,12 @@ class LiveBlog(Page):
             updated = []
             for update in pending_updates:
                 if update.update_type == PendingUpdate.NEW_MESSAGE:
-                    items.append({
-                        'type': 'text',
-                        'value': {
-                            'message_id': update.slack_id,
-                            'timestamp': update.timestamp,
-                            'message': update.raw_update,
-                        }
-                    })
+                    block_type = get_block_type(update)
+                    block = HANDLERS[block_type](update)
+                    items.append(block)
                     updated.append(update.slack_id)
                 elif update.update_type == PendingUpdate.EDIT:
-                    # Find message to update
+                    # Find message to update. Text block updates only.
                     for option in items:
                         if option['value']['message_id'] == update.slack_id:
                             item = option
@@ -80,8 +132,9 @@ class LiveBlog(Page):
                     else:
                         # No match found to edit :-(
                         continue
-                    item['value']['message'] = update.raw_update
-                    updated.append(update.slack_id)
+                    if item['type'] == TEXT:
+                        item['value']['message'] = update.raw_update
+                        updated.append(update.slack_id)
             # TODO: Maybe order stream data items on timestamp!
             self.last_updated = now()
             self.save()

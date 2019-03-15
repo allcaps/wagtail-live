@@ -1,3 +1,10 @@
+My inspiration for high speed publishing
+----------------------------------------
+
+https://nos.nl/liveblog/2274672-historische-zege-ajax-in-bernabeu-1-4-voor-het-eerst-sinds-2003-bij-laatste-acht.html
+
+But it could have been faster and more fun. With Wagtail and Slack!
+
 Install
 -------
 
@@ -38,7 +45,6 @@ Start Redis
 -----------
 
 brew services start redis
-
 
 https://api.slack.com/bot-users
 https://api.slack.com/actions

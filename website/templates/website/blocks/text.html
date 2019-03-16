@@ -1,7 +1,7 @@
 {% load markdownify %}
 
 <div class="text mb4" data-message-id="{{ value.message_id }}">
-  <span class="gray">{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </span><br />
+  {% include 'website/partials/timestamp.html' %}
   <p class="mt1 f3 dark-gray">
     {% if value.message %}
       {{ value.message|markdownify|linebreaksbr }}

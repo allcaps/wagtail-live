@@ -1,7 +1,7 @@
 {% load wagtailcore_tags %}
 
 <div class="embed mw7 mb4">
-  <p class="gray mb2">{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </p>
+  {% include 'website/partials/timestamp.html' %}
   <span>
     {% include_block self.embed %}
   </span>

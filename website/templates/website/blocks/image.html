@@ -1,7 +1,7 @@
 {% load wagtailcore_tags wagtailimages_tags %}
 
 <div class="image">
-  <span class="gray">{{ value.timestamp|date:'M d Y' }} {{ value.timestamp|time:'f:s' }} </span><br />
+  {% include 'website/partials/timestamp.html' %}
   {% image value.image width-1200 as img %}
   <p class="mt1 mb1 f3 dark-gray">{{ img.alt }}</p>
   <img src="{{ img.url }}"

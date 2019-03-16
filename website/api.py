@@ -1,17 +1,19 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from django.conf import settings
-from slackclient import SlackClient
+import logging
 
-from website.models import LiveBlog, PendingUpdate, HomePage
+from django.conf import settings
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from slackclient import SlackClient
+from website.models import HomePage, LiveBlog, PendingUpdate
 
 SLACK_VERIFICATION_TOKEN = getattr(settings, 'SLACK_VERIFICATION_TOKEN', None)
 SLACK_BOT_USER_TOKEN = getattr(settings, 'SLACK_BOT_USER_TOKEN', None)
 Client = SlackClient(SLACK_BOT_USER_TOKEN)
 
 
-# https://medium.com/freehunch/how-to-build-a-slack-bot-with-python-using-slack-events-api-django-under-20-minute-code-included-269c3a9bf64e
+logger = logging.getLogger(__name__)
+
 
 class Event(APIView):
     def post(self, request, *args, **kwargs):
@@ -27,7 +29,7 @@ class Event(APIView):
         if slack_message.get('type') == 'url_verification':
             return Response(data=slack_message, status=status.HTTP_200_OK)
 
-        print(slack_message)
+        logger.debug(slack_message)
 
         # Handle app event.
         if 'event' in slack_message and 'channel' in slack_message['event']:

@@ -188,6 +188,6 @@ class HomePage(Page):
     def get_context(self, request, *args, **kwargs):
         ctx = super().get_context(request, *args, **kwargs)
         ctx.update({
-            'pages': LiveBlog.objects.live()
+            'pages': LiveBlog.objects.live().in_menu().order_by('-first_published_at')
         })
         return ctx

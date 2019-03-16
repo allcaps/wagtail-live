@@ -46,7 +46,9 @@ class Event(APIView):
                         instance=LiveBlog(
                             title=event['channel']['name'],
                             slack_channel=channel['id'],
+                            show_in_menus=True,
                         ))
+                    live_blog.save_revision().publish()
                 else:
                     # Apparently we missed the channel created event...
                     live_blog = HomePage.objects.first().add_child(

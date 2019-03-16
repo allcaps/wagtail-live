@@ -26,7 +26,7 @@ BLOCK_TYPES = [
 ]
 
 
-def constuct_text_block(update):
+def construct_text_block(update):
     return {
         'type': TEXT,
         'value': {
@@ -39,7 +39,7 @@ def constuct_text_block(update):
 
 def construct_image_block(update):
     """Not implemented yet, do text"""
-    return constuct_text_block(update)
+    return construct_text_block(update)
 
 
 def construct_embed_block(update):
@@ -54,7 +54,7 @@ def construct_embed_block(update):
 
 
 HANDLERS = {
-    TEXT: constuct_text_block,
+    TEXT: construct_text_block,
     IMAGE: construct_image_block,
     EMBED: construct_embed_block,
 }

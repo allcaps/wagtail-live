@@ -10,7 +10,7 @@ from website.models import blog_update, LiveBlog
 
 def send_message(event):
     """
-    Call back function to send message to the browser
+    Callback function to send message to the browser
     """
     message = event['text']
     channel_layer = channels.layers.get_channel_layer()

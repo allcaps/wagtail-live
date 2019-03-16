@@ -14,7 +14,8 @@ from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
 from wagtail.embeds.oembed_providers import all_providers
 
 
-blog_update = ModelSignal(providing_args=['instance', 'num_updates', 'renders'], use_caching=True)
+blog_update = ModelSignal(providing_args=['instance', 'removals', 'renders'],
+                          use_caching=True)
 
 
 TEXT = 'text'
@@ -87,7 +88,7 @@ class LiveBlog(Page):
 
     content_panels = Page.content_panels + [
         StreamFieldPanel('body'),
-        InlinePanel('live_updates'),
+        # InlinePanel('live_updates'),
     ]
 
     @property
@@ -117,6 +118,7 @@ class LiveBlog(Page):
             pending_updates = get_pending_updates()
             items = self.body.stream_data
             updated = []
+            deleted = []
             for update in pending_updates:
                 if update.update_type == PendingUpdate.NEW_MESSAGE:
                     block_type = get_block_type(update)
@@ -135,10 +137,20 @@ class LiveBlog(Page):
                     if item['type'] == TEXT:
                         item['value']['message'] = update.raw_update
                         updated.append(update.slack_id)
+                elif update.update_type == PendingUpdate.DELETE:
+                    # Find message to delete
+                    for option in items:
+                        if option['value']['message_id'] == update.slack_id:
+                            items.remove(option)
+                            deleted.append(update.slack_id)
+                            break
+                    else:
+                        # No match found to delete :-(
+                        continue
+
             # TODO: Maybe order stream data items on timestamp!
             self.last_updated = now()
             self.save()
-            num_updates = int(pending_updates.count())
             # These are handled
             pending_updates.delete()
 
@@ -149,7 +161,7 @@ class LiveBlog(Page):
                        for value in updated_blocks}
 
             blog_update.send(sender=LiveBlog, instance=self,
-                             num_updates=num_updates, renders=renders)
+                             renders=renders, removals=deleted)
         finally:
             # Unset lock
             self.locked = False
@@ -162,28 +174,11 @@ class LiveBlog(Page):
             self.update()
 
 
-class Snippet(ClusterableModel):
-    page = ParentalKey(
-        LiveBlog,
-        related_name='live_updates',
-        on_delete=models.CASCADE,
-    )
-    timestamp = models.DateTimeField(auto_now_add=True)
-    message = models.CharField(
-        max_length=255,
-    )
-
-    def save(self, *args, **kwags):
-        super(Snippet, self).save(*args, **kwags)
-
-    def __str__(self):
-        return truncatewords(self.message, 20)
-
-
 class PendingUpdate(models.Model):
     """ Pending updates will be added asap! """
     NEW_MESSAGE = 1
     EDIT = 2
+    DELETE = 3
 
     update_type = models.PositiveIntegerField()
     live_blog = models.ForeignKey(LiveBlog, on_delete=models.CASCADE)

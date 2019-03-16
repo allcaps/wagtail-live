@@ -19,15 +19,25 @@
       const socket = new WebSocket(`ws://${window.location.host}/ws/update/{{ page.group_name }}/`);
       const messageContainer = document.getElementById('updates-container');
 
+      function getMessageElement(messageId) {
+        return messageContainer.querySelector(`[data-message-id="${messageId}"]`);
+      }
+
       socket.onmessage = (e) => {
           let data = JSON.parse(e.data);
-          let { message, renders } = data;
+          let { message, renders, removals } = data;
           Object.entries(renders).forEach(([ key, value]) => {
-            const existing = messageContainer.querySelector(`[data-message-id="${key}"]`);
+            const existing = getMessageElement(key);
             if (existing) {
               existing.outerHTML = value;
             } else {
               messageContainer.innerHTML = value + messageContainer.innerHTML;
+            }
+          });
+          Array.from(removals).forEach(messageId => {
+            const element = getMessageElement(messageId);
+            if (element) {
+              messageContainer.removeChild(element);
             }
           });
           console.log(message);

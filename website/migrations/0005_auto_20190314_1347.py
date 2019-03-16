@@ -28,7 +28,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='liveblog',
             name='last_updated',
-            field=models.DateTimeField(default=datetime.datetime(1, 1, 1, 0, 0)),
+            field=models.DateTimeField(default=datetime.datetime(1980, 1, 1, 0,
+                                                                 0)),
         ),
         migrations.AlterField(
             model_name='liveblog',

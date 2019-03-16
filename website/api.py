@@ -4,7 +4,7 @@ from rest_framework import status
 from django.conf import settings
 from slackclient import SlackClient
 
-from website.models import Snippet, LiveBlog, PendingUpdate, HomePage
+from website.models import LiveBlog, PendingUpdate, HomePage
 
 SLACK_VERIFICATION_TOKEN = getattr(settings, 'SLACK_VERIFICATION_TOKEN', None)
 SLACK_BOT_USER_TOKEN = getattr(settings, 'SLACK_BOT_USER_TOKEN', None)
@@ -67,6 +67,15 @@ class Event(APIView):
                     update_type=PendingUpdate.EDIT,
                     raw_update=slack_message['event']['message']['text'],
                     slack_id=slack_message['event']['message']['client_msg_id']
+                )
+            elif event['type'] == 'message' \
+                    and event.get('subtype') == 'message_deleted':
+                PendingUpdate.objects.create(
+                    live_blog=live_blog,
+                    update_type=PendingUpdate.DELETE,
+                    raw_update='',
+                    slack_id=slack_message['event']['previous_message'][
+                        'client_msg_id']
                 )
             else:
                 # nothing done

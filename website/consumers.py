@@ -78,8 +78,9 @@ class UpdateConsumer(WebsocketConsumer):
 
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-           'message': message,
+            'message': message,
             'renders': event['renders'],
+            'removals': event['removals'],
         }))
 
 

@@ -3,11 +3,9 @@ import json
 import channels.layers
 from asgiref.sync import async_to_sync
 
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from website.models import blog_update, LiveBlog
-from .models import Snippet
 
 
 def send_message(event):
@@ -23,8 +21,7 @@ def send_message(event):
 
 
 @receiver(blog_update, sender=LiveBlog)
-def update_job_status_listeners(sender, instance, num_updates, renders,
-                                **kwargs):
+def update_job_status_listeners(sender, instance, renders, removals, **kwargs):
     """
     Sends job status to the browser when a Job is modified
     """
@@ -32,8 +29,9 @@ def update_job_status_listeners(sender, instance, num_updates, renders,
 
     message = {
         'type': 'chat_message',
-        'message': '{} updates!'.format(num_updates),
+        'message': 'update',
         'renders': renders,
+        'removals': removals,
     }
 
     channel_layer = channels.layers.get_channel_layer()

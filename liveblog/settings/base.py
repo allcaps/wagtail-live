@@ -31,6 +31,9 @@ BASE_DIR = os.path.dirname(PROJECT_DIR)
 INSTALLED_APPS = [
     'channels',
     'website',
+
+    'django_extensions',
+
     'rest_framework',
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',

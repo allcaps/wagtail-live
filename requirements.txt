@@ -8,5 +8,6 @@ channels-redis==2.3.3
 django-markdownify==0.8.0
 
 # Development
-isort==4.3.13
+django-extensions==2.1.6
 ipdb==0.11
+isort==4.3.13

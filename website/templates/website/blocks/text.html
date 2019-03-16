@@ -1,10 +1,10 @@
-{% load markdownify %}
+{% load markdownify website_tags %}
 
 <div class="text mb4" data-message-id="{{ value.message_id }}">
   {% include 'website/partials/timestamp.html' %}
   <p class="mt1 f3 dark-gray">
     {% if value.message %}
-      {{ value.message|markdownify|linebreaksbr }}
+      {{ value.message|emojify|markdownify|linebreaksbr }}
     {% endif %}
   </p>
 </div>

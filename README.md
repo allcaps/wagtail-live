@@ -8,7 +8,7 @@ but it could have been faster and more fun, with Wagtail and Slack!
 
 ## Installation
 
-1. Create a db
+1. Create a database
 
 ```bash
 createdb liveblog

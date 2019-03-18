@@ -53,16 +53,25 @@ class Event(APIView):
                     # Apparently we missed the channel created event...
                     live_blog = HomePage.objects.first().add_child(
                         instance=LiveBlog(
-                        title=channel,
-                        slack_channel=channel,
-                    ))
+                            title=channel,
+                            slack_channel=channel,
+                        ))
 
             if event['type'] == 'message' and 'subtype' not in event:
                 PendingUpdate.objects.create(
                     live_blog=live_blog,
                     update_type=PendingUpdate.NEW_MESSAGE,
                     raw_update=slack_message['event']['text'],
-                    slack_id=slack_message['event']['client_msg_id']
+                    slack_id=slack_message['event']['client_msg_id'],
+                    json=slack_message,
+                )
+            elif event['type'] == 'message' and bool(event.get('files')):
+                PendingUpdate.objects.create(
+                    live_blog=live_blog,
+                    update_type=PendingUpdate.NEW_MESSAGE,
+                    raw_update="raw",
+                    slack_id="One",
+                    json=slack_message,
                 )
             elif event['type'] == 'message' \
                     and event.get('subtype') == 'message_changed':
@@ -70,7 +79,8 @@ class Event(APIView):
                     live_blog=live_blog,
                     update_type=PendingUpdate.EDIT,
                     raw_update=slack_message['event']['message']['text'],
-                    slack_id=slack_message['event']['message']['client_msg_id']
+                    slack_id=slack_message['event']['message']['client_msg_id'],
+                    json=slack_message,
                 )
             elif event['type'] == 'message' \
                     and event.get('subtype') == 'message_deleted':

@@ -3,7 +3,6 @@
 <div class="image">
   {% include 'website/partials/timestamp.html' %}
   {% image value.image width-1200 as img %}
-  <p class="mt1 mb1 f3 dark-gray">{{ img.alt }}</p>
   <img src="{{ img.url }}"
     width="{% widthratio img.width 2 1 %}"
     alt="{{ img.alt }}" class="mb4 db br2" />

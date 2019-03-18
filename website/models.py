@@ -1,19 +1,27 @@
+import logging
 import re
 from datetime import datetime, timedelta
 
+import requests
+from django.conf import settings
+from django.contrib.postgres.fields import JSONField
+from django.core.files.base import ContentFile
 from django.db import models
 from django.db.models.signals import ModelSignal
+from django.template.defaultfilters import slugify
 from django.utils.timezone import now
 from wagtail.admin.edit_handlers import StreamFieldPanel
 from wagtail.core.fields import StreamField
 from wagtail.core.models import Page
-from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
 from wagtail.embeds.oembed_providers import all_providers
+from wagtail.images import get_image_model
 
+from website.blocks import EmbedUpdate, ImageUpdate, TextUpdate
+
+logger = logging.getLogger(__name__)
 
 blog_update = ModelSignal(providing_args=['instance', 'removals', 'renders'],
                           use_caching=True)
-
 
 TEXT = 'text'
 IMAGE = 'image'
@@ -39,7 +47,34 @@ def construct_text_block(update):
 
 def construct_image_block(update):
     """Not implemented yet, do text"""
-    return construct_text_block(update)
+
+    for item in update.json.get('event', {}).get('files'):
+        url = item['url_private']
+        headers = {"Authorization": f"Bearer {settings.SLACK_BOT_USER_TOKEN}"}
+        response = requests.get(url, headers=headers)
+
+        # TODO: Handle other image formats
+        #  image/bmp, image/vnd.microsoft.icon, image/svg+xml, image/tiff, image/webp
+        if item.get('mimetype') in ['image/png', 'image/jpeg', 'image/gif']:
+            filename = item.get('name')
+            img = get_image_model()(
+                title=slugify(filename).replace('-', ' '),
+                file=ContentFile(
+                    response.content,
+                    name=filename,
+                )
+            )
+            img.save()
+
+            # We only handle one image for now.
+            return {
+                'type': IMAGE,
+                'value': {
+                    'message_id': update.slack_id,
+                    'timestamp': update.timestamp,
+                    'image': img.id,
+                }
+            }
 
 
 def construct_embed_block(update):
@@ -64,16 +99,23 @@ def get_block_type(update):
     """
     Get block type
 
+        - If the text matches a url pattern from Wagtail oembed providers -> EMBED
+        - If the text has an image attachment -> IMAGE
+        - All others -> TEXT
+
     :param update: The posted slack message (dict)
     :return: TEXT, IMAGE, EMBED (string)
     """
     for provider in all_providers:
         for url_pattern in provider.get('urls', []):
-            # Some how Slack links start with `<` and end with `>`.
-            # I strip those off.
+            # Somehow Slack links start with `<` and end with `>`.
             val = update.raw_update[1:-1]
             if bool(re.match(url_pattern, val)):
                 return EMBED
+
+    if update.json.get('event', {}).get('files'):
+        return IMAGE
+
     return TEXT
 
 
@@ -181,6 +223,7 @@ class PendingUpdate(models.Model):
     live_blog = models.ForeignKey(LiveBlog, on_delete=models.CASCADE)
     slack_id = models.CharField(max_length=40)
     raw_update = models.TextField()
+    json = JSONField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
 

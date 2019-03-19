@@ -16,10 +16,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='snippet',
-            name='page',
-        ),
         migrations.AddField(
             model_name='pendingupdate',
             name='json',
@@ -35,8 +31,5 @@ class Migration(migrations.Migration):
             model_name='liveblog',
             name='last_updated',
             field=models.DateTimeField(default=datetime.datetime(1, 1, 2, 0, 0)),
-        ),
-        migrations.DeleteModel(
-            name='Snippet',
         ),
     ]
